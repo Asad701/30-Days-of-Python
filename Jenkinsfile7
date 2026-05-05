@@ -1,51 +1,29 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "selenium-test"
-        CONTAINER_NAME = "selenium-container"
-    }
-
     stages {
-
-        stage('Checkout Code') {
-            steps {
-                git branch: 'master', url: 'https://github.com/Asad701/30-Days-of-Python.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh '''
-                    docker build -t $IMAGE_NAME .
-                    '''
-                }
+                sh 'docker build -t selenium-test .'
             }
         }
 
         stage('Run Selenium Tests') {
             steps {
-                script {
-                    sh '''
-                    docker run --name $CONTAINER_NAME --rm $IMAGE_NAME
-                    '''
-                }
+                sh 'docker run selenium-test'
             }
         }
     }
 
     post {
+        always {
+            sh 'docker system prune -af || true'
+        }
         success {
-            echo "✅ Selenium Test Passed!"
+            echo '✅ Selenium Test Passed!'
         }
         failure {
-            echo "❌ Selenium Test Failed!"
-        }
-        always {
-            sh '''
-            docker system prune -af || true
-            '''
+            echo '❌ Selenium Test Failed!'
         }
     }
 }
