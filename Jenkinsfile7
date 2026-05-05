@@ -1,29 +1,33 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "selenium-test"
+    }
+
     stages {
+
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t selenium-test .'
+                script {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
             }
         }
 
         stage('Run Selenium Tests') {
             steps {
-                sh 'docker run selenium-test'
+                script {
+                    sh "docker run --rm ${IMAGE_NAME}"
+                }
             }
         }
     }
 
     post {
         always {
-            sh 'docker system prune -af || true'
-        }
-        success {
-            echo '✅ Selenium Test Passed!'
-        }
-        failure {
-            echo '❌ Selenium Test Failed!'
+            // Cleanup Docker system (images, containers, cache)
+            sh "docker system prune -af"
         }
     }
 }
